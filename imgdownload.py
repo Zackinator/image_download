@@ -2,6 +2,7 @@ import requests  #To get image from the web'''
 import shutil  #To save it locally'''
 import urllib3
 from tqdm import tqdm
+from bs4 import BeautifulSoup
 
 
 def image_downloader():
@@ -44,5 +45,14 @@ def req_test():
     except Exception as e:
         print(e)
 
-image_downloader()
-req_test()
+def get_browser_image():
+    '''Search the web for a category of images: ex Nic cage'''
+    searchterm = input("Enter the search term for picture download: \n")
+    url = "https://duckduckgo.com/?q=" + searchterm + "&atb=v214-1&iar=images&iax=images&ia=images"
+    link = requests.get(url)
+    soup = BeautifulSoup(link, 'html.parser')
+    print(soup.prettify())
+
+get_browser_image()
+#image_downloader()
+#req_test()
