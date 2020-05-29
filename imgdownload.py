@@ -1,9 +1,12 @@
 import requests  #To get image from the web'''
 import shutil  #To save it locally'''
 import urllib3
+import os
+import ast
+import urllib.request as ulib
 from tqdm import tqdm
-from bs4 import BeautifulSoup
-
+from bs4 import BeautifulSoup as soup
+from selenium import webdriver
 
 def image_downloader():
     image_url = "https://cdn.pixabay.com/photo/2020/02/06/09/39/summer-4823612_960_720.jpg"
@@ -39,6 +42,7 @@ def req_test():
 
     '''Request status code'''
     try:
+        wait = input('Requesting URL....')
         resp = http.request('GET', img_url)
         print(resp.data)
         print(resp.status)
@@ -48,10 +52,22 @@ def req_test():
 def get_browser_image():
     '''Search the web for a category of images: ex Nic cage'''
     searchterm = input("Enter the search term for picture download: \n")
-    url = "https://duckduckgo.com/?q=" + searchterm + "&atb=v214-1&iar=images&iax=images&ia=images"
-    link = requests.get(url)
-    soup = BeautifulSoup(link, 'html.parser')
-    print(soup.prettify())
+    driver = webdriver.Chrome("chromium.exe")
+    url = "https://www.google.com/search?q="+ searchterm +"&sxsrf=ALeKk00EFUoVu7Ictc6MqzlQ1WqvGcIgng:1590772434462&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjo9f6OydnpAhVXQH0KHW4xAHMQ_AUoAXoECBkQAw&biw=2560&bih=937"
+    driver.get(url)
+    page = driver.page_source
+
+    Soup = soup(page,'lxml')
+    urls = Soup.find_all('div',{'class':'rg_i Q4LuWd tx8vtf'})
+
+    all_urls = []
+
+    for i in urls:
+        link = i.text
+        link = ast.literal_eval(link)['ou']
+        all_urls.append(link)
+        print(all_urls)
+    return(all_urls)
 
 get_browser_image()
 #image_downloader()
