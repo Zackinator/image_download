@@ -34,41 +34,42 @@ def image_downloader(imgsrc):
     '''Streaming, so we can iterate over the response.'''
     for i in image_url:
         r = requests.get(i, stream = True)
+        r.raw.decode_content = True
+        print(r)
+        '''Set decode_content value to True, otherwise the downloaded image
+        file's size will be zero'''
 
-    '''Set decode_content value to True, otherwise the downloaded image
-    file's size will be zero'''
-    r.raw.decode_content = True
+        ''' Total size in bytes.'''
+        total_size = int(r.headers.get('content-length', 0))
+        block_size = 1024 #1 kikibyte
+        t=tqdm(total=total_size, unit='iB', unit_scale=True)
 
-    ''' Total size in bytes.'''
-    total_size = int(r.headers.get('content-length', 0))
-    block_size = 1024 #1 kikibyte
-    t=tqdm(total=total_size, unit='iB', unit_scale=True)
+        ''' Open a local file with wb ( Write Binary ) premission.'''
+        with open(filename,'wb') as f:
+            for data in r.iter_content(block_size):
+                t.update(len(data))
+                f.write(data)
+            shutil.copyfileobj(r.raw, f)
 
-    ''' Open a local file with wb ( Write Binary ) premission.'''
-    with open(filename,'wb') as f:
-        for data in r.iter_content(block_size):
-            t.update(len(data))
-            f.write(data)
-        shutil.copyfileobj(r.raw, f)
-
-    '''Close Loading bar'''
-    t.close()
-    if total_size !=0 and t.n != total_size:
-        print("Error, something went wrong")
+        '''Close Loading bar'''
+        t.close()
+        if total_size !=0 and t.n != total_size:
+            print("Error, something went wrong")
 
 
-def req_test():
+def req_test(s):
     http = urllib3.PoolManager()
-    img_url = imgsrc,imgalt
+    for i in s:
+        img_url = i
 
-    '''Request status code'''
-    try:
-        wait = input('Requesting URL....')
-        resp = http.request('GET', img_url)
-        print(resp.data)
-        print(resp.status)
-    except Exception as e:
-        print(e)
+        '''Request status code'''
+        try:
+            wait = input('Requesting URL....')
+            resp = http.request('GET', img_url)
+            print(resp.data)
+            print(resp.status)
+        except Exception as e:
+            print(e)
 
 def get_browser_image():
     imgsrc = []
@@ -78,13 +79,17 @@ def get_browser_image():
     r = requests.get(url)
     html = r.text
     Soup = soup(html, 'lxml')
-    links = Soup.find_all('img')
-    for image in links:
-        imgsrc = (image['src'] + image['alt'])
-        print(imgsrc)
+    #links = Soup.find_all('img')
+    for a in Soup.find_all('a'):
+        if a.img:
+            print(a.img['src'])
+            imgsrc.append(a.img['src'])
+            imgsrc.remove(imgsrc[0])
+    return imgsrc
 
-imglink = get_browser_image()
+
+imgli = get_browser_image()
 
 
-image_downloader(imglink)
-req_test()
+image_downloader(imgli)
+req_test(imgli)
