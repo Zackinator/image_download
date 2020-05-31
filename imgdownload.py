@@ -7,13 +7,33 @@ import urllib.request as ulib
 from tqdm import tqdm
 from bs4 import BeautifulSoup as soup
 from selenium import webdriver
+import re
+import concurrent.futures
 
-def image_downloader():
-    image_url = "https://cdn.pixabay.com/photo/2020/02/06/09/39/summer-4823612_960_720.jpg"
-    filename = image_url.split("/")[-1]
+# Target dataset PATH
+DATASET_PATH = "./dataset"
+#Fake user agent for avoiding 503 Error
+Headers = {'User-Agent': 'Mozilla/5.0(X11; Linux x86_64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.90 Safari/537.36'}
+#Advanced parameters
+#Categories want to scrap
+CATEGORIES = ['dog','cat']
+
+#Page limit to search for images url
+PAGE_FROM = 1
+PAGE_TO = 2
+#NUMBER of workers for downloading pages and images better and faster
+WORKERS = 4
+
+image_urls = []
+timeout = 60 #Request timeout
+
+
+def image_downloader(imgsrc):
+    image_url = imgsrc
 
     '''Streaming, so we can iterate over the response.'''
-    r = requests.get(image_url, stream = True)
+    for i in image_url:
+        r = requests.get(i, stream = True)
 
     '''Set decode_content value to True, otherwise the downloaded image
     file's size will be zero'''
@@ -36,9 +56,10 @@ def image_downloader():
     if total_size !=0 and t.n != total_size:
         print("Error, something went wrong")
 
+
 def req_test():
     http = urllib3.PoolManager()
-    img_url = "https://cdn.pixabay.com/photo/2020/02/06/09/39/summer-4823612_960_720.jpg"
+    img_url = imgsrc,imgalt
 
     '''Request status code'''
     try:
@@ -50,25 +71,20 @@ def req_test():
         print(e)
 
 def get_browser_image():
+    imgsrc = []
     '''Search the web for a category of images: ex Nic cage'''
     searchterm = input("Enter the search term for picture download: \n")
-    driver = webdriver.Chrome("chromium.exe")
     url = "https://www.google.com/search?q="+ searchterm +"&sxsrf=ALeKk00EFUoVu7Ictc6MqzlQ1WqvGcIgng:1590772434462&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjo9f6OydnpAhVXQH0KHW4xAHMQ_AUoAXoECBkQAw&biw=2560&bih=937"
-    driver.get(url)
-    page = driver.page_source
+    r = requests.get(url)
+    html = r.text
+    Soup = soup(html, 'lxml')
+    links = Soup.find_all('img')
+    for image in links:
+        imgsrc = (image['src'] + image['alt'])
+        print(imgsrc)
 
-    Soup = soup(page,'lxml')
-    urls = Soup.find_all('div',{'class':'rg_i Q4LuWd tx8vtf'})
+imglink = get_browser_image()
 
-    all_urls = []
 
-    for i in urls:
-        link = i.text
-        link = ast.literal_eval(link)['ou']
-        all_urls.append(link)
-        print(all_urls)
-    return(all_urls)
-
-get_browser_image()
-#image_downloader()
-#req_test()
+image_downloader(imglink)
+req_test()
