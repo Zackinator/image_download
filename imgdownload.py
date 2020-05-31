@@ -9,6 +9,11 @@ from bs4 import BeautifulSoup as soup
 from selenium import webdriver
 import re
 import concurrent.futures
+import random
+
+
+
+
 
 # Target dataset PATH
 DATASET_PATH = "./dataset"
@@ -28,11 +33,22 @@ image_urls = []
 timeout = 60 #Request timeout
 
 
-def image_downloader(imgsrc):
-    image_url = imgsrc
-
-    '''Streaming, so we can iterate over the response.'''
+def image_downloader(img):
+    image_url = img
+    number = 0
+    checkfolder = str(input("Enter the name of the folder where you want to store images: "))
+    newpath = r"C:\Users\zacka\gitclone\image_download\image_download\\" + checkfolder + "\\"
+    try:
+        os.mkdir(newpath)
+        print("Directory" , newpath, "Created ")
+    except FileExistsError:
+        print("Directory " , newpath, " already exists")
     for i in image_url:
+        file = "i" + str(random.randint(1,20)) + '.jpg'
+        number += 1
+        print('filename: ','FILE>',number)
+        print('URL: ',i)
+        '''Streaming, so we can iterate over the response.'''
         r = requests.get(i, stream = True)
         r.raw.decode_content = True
         print(r)
@@ -45,27 +61,25 @@ def image_downloader(imgsrc):
         t=tqdm(total=total_size, unit='iB', unit_scale=True)
 
         ''' Open a local file with wb ( Write Binary ) premission.'''
-        with open(filename,'wb') as f:
+        with open(file,'wb') as f:
             for data in r.iter_content(block_size):
                 t.update(len(data))
                 f.write(data)
             shutil.copyfileobj(r.raw, f)
 
-        '''Close Loading bar'''
+            '''Close Loading bar'''
         t.close()
         if total_size !=0 and t.n != total_size:
             print("Error, something went wrong")
 
 
-def req_test(s):
-    http = urllib3.PoolManager()
-    for i in s:
-        img_url = i
+
+        http = urllib3.PoolManager()
+        test = img
 
         '''Request status code'''
         try:
-            wait = input('Requesting URL....')
-            resp = http.request('GET', img_url)
+            resp = http.request('GET', test)
             print(resp.data)
             print(resp.status)
         except Exception as e:
@@ -84,12 +98,9 @@ def get_browser_image():
         if a.img:
             print(a.img['src'])
             imgsrc.append(a.img['src'])
-            imgsrc.remove(imgsrc[0])
+    imgsrc.pop(0)
     return imgsrc
 
-
-imgli = get_browser_image()
-
-
-image_downloader(imgli)
-req_test(imgli)
+if __name__ == "__main__":
+    imgli = get_browser_image()
+    image_downloader(imgli)
