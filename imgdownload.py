@@ -31,20 +31,22 @@ WORKERS = 4
 
 image_urls = []
 timeout = 60 #Request timeout
-
+checkfolder = input("Enter the name of the folder where you want to store images: ")
+newpath = r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder
 
 def image_downloader(img):
     image_url = img
-    number = 0
-    checkfolder = str(input("Enter the name of the folder where you want to store images: "))
-    newpath = r"C:\Users\zacka\gitclone\image_download\image_download\\" + checkfolder + "\\"
+    number = 1
+    #checkfolder = str(input("Enter the name of the folder where you want to store images: "))
+    #newpath = r"C:\Users\zacka\gitclone\image_download\image_download\\" + checkfolder + "\\"
     try:
         os.mkdir(newpath)
         print("Directory" , newpath, "Created ")
+        os.chdir(newpath)
     except FileExistsError:
         print("Directory " , newpath, " already exists")
     for i in image_url:
-        file = "i" + str(random.randint(1,20)) + '.jpg'
+        file = "i" + str(number) + '.jpg'
         number += 1
         print('filename: ','FILE>',number)
         print('URL: ',i)
@@ -88,7 +90,7 @@ def image_downloader(img):
 def get_browser_image():
     imgsrc = []
     '''Search the web for a category of images: ex Nic cage'''
-    searchterm = input("Enter the search term for picture download: \n")
+    searchterm = input("Enter the search term for picture download: ")
     url = "https://www.google.com/search?q="+ searchterm +"&sxsrf=ALeKk00EFUoVu7Ictc6MqzlQ1WqvGcIgng:1590772434462&source=lnms&tbm=isch&sa=X&ved=2ahUKEwjo9f6OydnpAhVXQH0KHW4xAHMQ_AUoAXoECBkQAw&biw=2560&bih=937"
     r = requests.get(url)
     html = r.text
