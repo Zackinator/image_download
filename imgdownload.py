@@ -10,7 +10,7 @@ from selenium import webdriver
 import re
 import concurrent.futures
 import random
-
+import sys
 
 
 
@@ -32,7 +32,7 @@ WORKERS = 4
 image_urls = []
 timeout = 60 #Request timeout
 checkfolder = input("Enter the name of the folder where you want to store images: ")
-newpath = r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder
+
 
 def image_downloader(img):
     image_url = img
@@ -40,11 +40,23 @@ def image_downloader(img):
     #checkfolder = str(input("Enter the name of the folder where you want to store images: "))
     #newpath = r"C:\Users\zacka\gitclone\image_download\image_download\\" + checkfolder + "\\"
     try:
-        os.mkdir(newpath)
-        print("Directory" , newpath, "Created ")
-        os.chdir(newpath)
+        if os.path.exists(r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder):
+            print("\n \n DIRECTORY >" ,r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder, " ALREADY EXISTS\n TRY A DIFFERENT NAME:\n")
+            ex = input("Type exit to exit, or press enter to change directory name")
+            if ex == "exit":
+                sys.exit(0)
+            else:
+                new = input("Enter the name of the folder where you want to store images: ")
+                os.mkdir(r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + new)
+                print("Directory" ,r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + new, "Created ")
+                os.chdir(r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + new)
+        else:
+            os.mkdir(r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder)
+            print("Directory" ,r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder, "Created ")
+            os.chdir(r"C:\Users\zacka\gitclone\image_download\image_download" + "\\" + checkfolder)
     except FileExistsError:
         print("Directory " , newpath, " already exists")
+        sys.exit(0)
     for i in image_url:
         file = "i" + str(number) + '.jpg'
         number += 1
@@ -98,7 +110,7 @@ def get_browser_image():
     #links = Soup.find_all('img')
     for a in Soup.find_all('a'):
         if a.img:
-            print(a.img['src'])
+            print(a.img['src'],a.img['alt'])
             imgsrc.append(a.img['src'])
     imgsrc.pop(0)
     return imgsrc
